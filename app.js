@@ -27,8 +27,26 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
-app.get('/users', user.list);
+app.get('/', function(req, res){
+  res.render('index', { title: 'Express' });
+});
+
+app.get('/check/:url/:db?', function(req, res) {
+	var url = req.params.url;
+	var db = req.params('db', '');
+	res.send(200, 'Database detected.');
+	res.send(404, 'No database detected.');
+});
+
+app.get('/db', function(req, res) {
+	res.send(200, 'Database detected.');
+	res.send(404, 'No database detected.');
+});
+
+app.get('/step', function(req, res) {
+	res.redirect('/');
+
+});
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

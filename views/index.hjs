@@ -1,5 +1,197 @@
 <!DOCTYPE html>
 <html>
+	<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=9">      
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,target-densitydpi=device-dpi">
+        <meta name="language" content="en" >
+        <title>cloudControl PaaS Tutorial App</title>
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css" /> 
+        <!--[if lt IE 9]> <script type="text/javascript" src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    </head>
+	<body class="content-controller">
+        <header>
+            <a href="/" class="logo">cloudControl PaaS Tutorial App</a>
+        </header>
+		<section id="container">
+		    <section id="stage">
+		        <div>
+		            <ul>
+		                {% if is_default and not dbconnected %}
+		                    <li><span class="done">Step 1 Quickstart</span></li>
+		                    <li><span class="current">Step 2 Branching</span></li>
+		                    <li><span>Step 3 Add-Ons</span></li>
+		                    <li><span>Step 4 Merging</span></li>
+		                {% elif not is_default and not dbconnected %}
+		                    <li><span class="done">Step 1 Quickstart</span></li>
+		                    <li><span class="done">Step 2 Branching</span></li>
+		                    <li><span class="current">Step 3 Add-Ons</span></li>
+		                    <li><span>Step 4 Merging</span></li>
+		                {% elif not is_default and dbconnected %}
+		                    <li><span class="done">Step 1 Quickstart</span></li>
+		                    <li><span class="done">Step 2 Branching</span></li>
+		                    <li><span class="done">Step 3 Add-Ons</span></li>
+		                    <li><span class="current">Step 4 Merging</span></li>
+		                {% elif is_default and dbconnected %}
+		                    <li><span class="done">Step 1 Quickstart</span></li>
+		                    <li><span class="done">Step 2 Branching</span></li>
+		                    <li><span class="done">Step 3 Add-Ons</span></li>
+		                    <li><span class="done">Step 4 Merging</span></li>
+		                {% endif %}
+		            </ul>
+		        </div>
+		    </section>
+		    <section id="content" class="clearfix">
+		        <div class="introtext">
+		            {% if is_default and not dbconnected %}
+		                <h1>Step 2: Branching</h1>
+		                <p>Congratulations! You successfully deployed an app on cloudControl! Want to learn more? Follow along below:</p>
+		            {% elif not is_default and not step %}
+		                <h1>Step 3: Add-ons</h1>
+		            {% elif not is_default and dbconnected and step %}
+		                <h1>Step 4: Merging</h1>
+		            {% elif is_default and dbconnected %}
+		                <h1>Step 5: Done!</h1>
+		            {% endif %}
+		        </div>
+		        <p>Visits to this Page:</p>
+		        <div class="position-wrapper"><span class="position">{{ hit0 }}</span></div>
+		        <div class="position-wrapper"><span class="position">{{ hit1 }}</span></div>
+		        <div class="position-wrapper"><span class="position">{{ hit2 }}</span></div>
+		        <div class="position-wrapper"><span class="position">{{ hit3 }}</span></div>
+		        <div class="state-wrapper">
+		            <div class="filler"></div>
+		            <div class="states">
+		                {% if dbconnected %}
+		                    <div class="file">
+		                {% else %}
+		                    <div class="file_on">
+		                {% endif %}
+		                <strong>Text File</strong><br />
+		                {% if dbconnected %}
+		                    <i>not connected</i>
+		                {% else %}
+		                    <i>connected</i>
+		                {% endif %}
+		                    </div>
+		                {% if dbconnected %}
+		                    <div class="db_on">
+		                {% else %}
+		                    <div class="db">
+		                {% endif %}
+		                <strong>Database</strong><br />
+		                {% if dbconnected %}
+		                    <i>connected</i>
+		                {% else %}
+		                    <i>not connected</i>
+		                {% endif %}
+		                </div>
+		            </div>
+		        </div>
+		        <div class="static-wrapper clearfix">
+		            {% if is_default and not dbconnected %}
+		                <p>This is a page visit counter. Refresh this page a few times. You’ll see that the counter increases.</p>
+		                <p>While it’s fun to refresh the page and see the number increase, the implementation is fairly primitive. Currently the counter value is written to a text file on the local file system. Because the file system on cloudControl is not persistent (i.e. it will be rebuilt from a fresh image on each deploy), you probably want to use a persistent storage option instead. Not writing to the local file system also allows you to easily scale horizontally.</p>
+		                <p>In this example, we decided to improve the counter implementation by storing the value in a MySQL database. To ensure the existing version keeps running smoothly, we will create a separate deployment on the cloudControl platform while we implement the new feature.</p>
+		                <h2>Create a Development Deployment</h2>
+		                <p>Switch to your development branch:</p>
+		                <pre class="prettyprint lang-bash">git checkout development</pre>
+
+		                <p>Push your changes to the development deployment:</p>
+		                <pre class="prettyprint lang-bash">cctrlapp {{ app_name }}/development push</pre>
+
+		                <p>Deploy the app:</p>
+		                <pre class="prettyprint lang-bash">cctrlapp {{ app_name }}/development deploy</pre>
+
+		                <a class="btn medium blue left fix" href="#hint" onclick="checkUrl('development-{{ app_name }}.cloudcontrolapp.com')"><span id="wait"></span>Next Step</a>
+		            {% elif not is_default and not step %}
+		                <p>Welcome to the development deployment! Notice that the counter has reset to 1, as this is your first visit to the development deployment. Let´s go ahead and add the MySQL Add-on from the cloudControl Add-on Marketplace to fix the limitation we encountered earlier.</p>
+		                <h2>Adding an Add-on</h2>
+		                <p>Add the database Add-on to the development deployment</p>
+		                <pre class="prettyprint lang-bash">cctrlapp {{ app_name }}/development addon.add mysqls.free</pre>
+
+		                <p>Every deployment gets different credentials for each Add-on. Since providers can change these credentials at any time it is highly recommended to read the credentials from the provided JSON file.</p>
+		                <p>If you open settings.py in your application, you can see how this can be implemented.</p>
+		                <pre class="prettyprint">
+		with open(os.environ["CRED_FILE"]) as cred_file:
+		data = json.load(cred_file)
+		creds = data['MYSQLS']
+		config = {
+		'MYSQL_HOSTNAME': creds['MYSQLS_HOSTNAME'],
+		'MYSQL_DATABASE': creds['MYSQLS_DATABASE'],
+		'MYSQL_USERNAME': creds['MYSQLS_USERNAME'],
+		'MYSQL_PASSWORD': creds['MYSQLS_PASSWORD'],
+		'MYSQL_PORT': creds['MYSQLS_PORT']
+		}
+		}
+		</pre>
+		                <p>There is no need to do a new push and deploy since adding an Add-on will automatically redeploy your application.</p>
+		                <p>Try refreshing your page a couple of times. As you can see from the icons next to your counter, it is now using the MySQL database.</p>
+
+		                <a class="btn medium blue left fix" href="{{ url_for('step') }}">Next Step</a>
+
+		            {% elif not is_default and dbconnected and step %}
+		                <p>As we have verified that the counter uses the database instead of the text file, we can safely merge the development branch back to the master branch.</p>
+
+		                <h2>Merge Branches</h2>
+
+		                <p>Let’s start by adding the MySQL database to the default deployment, just as we did in the development deployment.</p>
+
+		                <p>Add the MySQL Add-on:</p>
+		                <pre class="prettyprint lang-bash">cctrlapp {{ app_name }}/default addon.add mysqls.free</pre>
+
+		                <p>With the Add-on added, we can now merge the development branch back into the master. Note that the master branch on Git corresponds to the default deployment on cloudControl.</p>
+
+		                <p>Switch the branch to master:</p>
+		                <pre class="prettyprint lang-bash">git checkout master</pre>
+
+		                <p>Merge the changes:</p>
+		                <pre class="prettyprint lang-bash">git merge development</pre>
+		                
+		                <p>Push the changes to the default deployment:</p>
+		                <pre class="prettyprint lang-bash">cctrlapp {{ app_name }}/default push</pre>
+		                
+		                <p>Deploy the app:</p>
+		                <pre class="prettyprint lang-bash">cctrlapp {{ app_name }}/default deploy</pre>
+
+		                <p>Now you can visit the default deployment and verify that it is connected to the database:</p>
+
+		                <a class="btn medium blue left fix" href="#hint" onclick="checkDb('{{ app_name }}.cloudcontrolapp.com')"><span id="wait"></span>Next Step</a>
+		            {% elif is_default and dbconnected %}
+		                <p>Welcome back to the default deployment, which now contains a counter connected to a database. This is the last time the counter will reset to one, because from now on you won’t have to worry about a text file being overwritten.</p>
+		                <p class="bigmid">Congratulations!</p>
+		                <p>You’ve learned how to deploy an app, create a deployment and work with Add-ons on cloudControl. There are a ton of useful resources in the Dev Center to help you develop your amazing app, such as:</p>
+		                <ul>
+		                    <li><a class="followup" href="https://www.cloudcontrol.com/dev-center/Guides/Python">cloudControl Python Guides</a></li>
+		                    <li><a class="followup" href="https://www.cloudcontrol.com/dev-center/Platform%20Documentation">cloudControl Platform Documentation</a></li>
+		                    <li><a class="followup" href="https://www.cloudcontrol.com/add-ons">cloudControl Add-on Marketplace</a></li>
+		                </ul>
+		            {% endif %}
+		            <div class="alert alert-danger" id="hint">
+		                Your Deployment isn't reachable yet, please make sure you followed all above steps and then try the "Next step" button again.
+		            </div>
+		            {% with messages = get_flashed_messages() %}
+		              {% if messages %}
+		              <div class="alert alert-danger" id="warning">
+		                {% for message in messages %}
+		                  {{ message }}
+		                {% endfor %}
+		              </div>
+		              {% endif %}
+		            {% endwith %}
+		        </div>
+		    </section>
+		</section>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/checkdep.js"></script>
+	</body>
+</html>
+
+
+<!DOCTYPE html>
+<html>
   <head>
     <title>{{ title }}</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
